@@ -1,0 +1,6 @@
+Please install the following packages:
+H5py 
+Numpy 
+OS
+matplotlib.pyplot
+pyopenephys
