@@ -2,33 +2,31 @@ import h5py
 import numpy as np
 import FormatInterface
 
-class HandelMCH5File:
+class HandelMCH5File(FormatInterface.FormatInterface):
     def __init__(self,inputFile):
-       self.inputFile=inputFile
-       self.listOfRecordings=[]
-       self.listOfStreams=[]
-       self.allData = []
-
+        super().__init__()
+        self.inputFile = inputFile
+        self.listOfRecordings = []
+        self.listOfStreams = []
+        self.extractedFile = []
     def GetData(self):
         try:
             tickPosition = 9
-            extractedFile = h5py.File(self.inputFile,"r")
-            self.listOfRecordings= FormatInterface.ShowFileInnerSection(extractedFile['/Data/'])
+            self.extractedFile = h5py.File(self.inputFile,"r")
+            self.listOfRecordings= self.ShowFileInnerSection(self.extractedFile['/Data/'])
             for recording in self.listOfRecordings:
-                self.listOfStreams= FormatInterface.ShowFileInnerSection(extractedFile['/Data/'+recording+'/AnalogStream/'])
+                self.listOfStreams= self.ShowFileInnerSection(self.extractedFile['/Data/'+recording+'/AnalogStream/'])
                 for stream in self.listOfStreams:
-                    currentData= FormatInterface.FormatInterface()
-                    currentData.timeStepMS= (extractedFile['/Data/' + recording + '/AnalogStream/' + stream + '/InfoChannel'][0])[tickPosition]*1e-3
-                    currentData.durationMS = (extractedFile['/Data/' + recording + '/AnalogStream/' + stream + '/ChannelDataTimeStamps'][0,2])* currentData.timeStepMS
-                    currentData.GetRelevantTimestamps()
-                    currentData. nChannels = len(np.array((extractedFile['/Data/' + recording + '/AnalogStream/' + stream + '/ChannelData'])[:, 0]))
-                    currentData.GetRelevantChannels()
-                    if (( currentData.startTimeIndex!=None) and ( currentData.endTimeIndex!=None) and ( currentData.startChannel!=None) and ( currentData.endChannel!=None) and ( currentData.timestamps[0]!=None)):
-                        currentData.metaData = np.array(
-                            (extractedFile['/Data/' + recording + '/AnalogStream/' + stream + '/ChannelData'])[ currentData.startChannel-1: currentData.endChannel,  currentData.startTimeIndex: currentData.endTimeIndex])
-                        currentData.metaData=currentData.metaData.transpose()
-                        currentData.PlotData()
-                        self.allData.append(currentData)
+                    self.timeStepMS= (self.extractedFile['/Data/' + recording + '/AnalogStream/' + stream + '/InfoChannel'][0])[tickPosition]*1e-3
+                    self.durationMS = (self.extractedFile['/Data/' + recording + '/AnalogStream/' + stream + '/ChannelDataTimeStamps'][0,2])* self.timeStepMS
+                    self.GetRelevantTimestamps()
+                    self. nChannels = len(np.array((self.extractedFile['/Data/' + recording + '/AnalogStream/' + stream + '/ChannelData'])[:, 0]))
+                    self.GetRelevantChannels()
+                    if (( self.startTimeIndex!=None) and ( self.endTimeIndex!=None) and ( self.startChannel!=None) and ( self.endChannel!=None) and ( self.timestamps[0]!=None)):
+                        self.metaData = np.array(
+                            (self.extractedFile['/Data/' + recording + '/AnalogStream/' + stream + '/ChannelData'])[ self.startChannel-1: self.endChannel,  self.startTimeIndex: self.endTimeIndex])
+                        self.metaData=self.metaData.transpose()
+                        self.PlotData()
                     else:
                         print("Error Loading Data, Please Try Again")
         except Exception as e:

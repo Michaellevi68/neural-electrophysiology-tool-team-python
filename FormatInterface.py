@@ -81,13 +81,13 @@ class FormatInterface:
         self.relativeEndTimeIndex=  self.endTimeIndex- self.startTimeIndex-1
         self.relativeStartTimeIndex=0
 
-def ShowFileInnerSection(fileSec):
-    try:
-        innerSectionList = []
-        for i in fileSec:
-            innerSectionList.append(i)
-        return innerSectionList
-    except Exception as e:
-        print("An exception occurred. Please Try Again")
-        print(e)
-        return
+    def ShowFileInnerSection(self,fileSec):
+        try:
+            innerSectionList = []
+            for i in fileSec:
+                innerSectionList.append(i)
+            return innerSectionList
+        except Exception as e:
+            print("An exception occurred. Please Try Again")
+            print(e)
+            return

@@ -2,32 +2,32 @@ import h5py
 import numpy as np
 import FormatInterface
 
-class HandelNWBFile:
+class HandelNWBFile(FormatInterface.FormatInterface):
     def __init__(self,inputFile):
-       self.inputFile=inputFile
-       self.listOfRecordings=[]
-       self.listOfProcessors=[]
-       self.allData = []
+        super().__init__()
+        self.inputFile = inputFile
+        self.listOfRecordings = []
+        self.listOfProcessors = []
+        self.extractedFile = []
 
     def GetData(self):
         try:
-            extractedFile = h5py.File(self.inputFile,"r")
-            self.listOfRecordings = FormatInterface.ShowFileInnerSection(extractedFile['/acquisition/timeseries/'])
+            self.extractedFile = h5py.File(self.inputFile,"r")
+            self.listOfRecordings = self.ShowFileInnerSection(self.extractedFile['/acquisition/timeseries/'])
             for recording in self.listOfRecordings:
-                self. listOfProcessors = FormatInterface.ShowFileInnerSection(extractedFile['/acquisition/timeseries/'+recording+'/continuous/'])
+                self. listOfProcessors = self.ShowFileInnerSection(self.extractedFile['/acquisition/timeseries/'+recording+'/continuous/'])
                 for processor in self.listOfProcessors:
-                    currentData = FormatInterface.FormatInterface()
-                    startTimestamps = np.array(extractedFile['/acquisition/timeseries/' + recording + '/continuous/' + processor + '/timestamps'][0])
-                    secondTimestamps = np.array(extractedFile['/acquisition/timeseries/' + recording + '/continuous/' + processor + '/timestamps'][1])
-                    currentData.timeStepMS=  (secondTimestamps-startTimestamps)*1e3
-                    currentData.durationMS=(extractedFile['/acquisition/timeseries/' + recording + '/continuous/' + processor + '/timestamps']).shape[0]*currentData.timeStepMS
-                    currentData.GetRelevantTimestamps()
-                    currentData.nChannels = extractedFile['/acquisition/timeseries/'+recording+'/continuous/'+processor+'/data'].shape[1]
-                    currentData.GetRelevantChannels()
-                    if ((currentData.startTimeIndex != None) and (currentData.endTimeIndex != None) and ( currentData.startChannel != None) and (currentData.endChannel != None) and ( currentData.timestamps[0] != None)):
-                        currentData.metaData = np.array((extractedFile['/acquisition/timeseries/'+recording+'/continuous/'+processor+'/data'][currentData.startTimeIndex:currentData.endTimeIndex,currentData.startChannel - 1:currentData.endChannel]))
-                        currentData.PlotData()
-                        self.allData.append(currentData)
+                    startTimestamps = np.array(self.extractedFile['/acquisition/timeseries/' + recording + '/continuous/' + processor + '/timestamps'][0])
+                    secondTimestamps = np.array(self.extractedFile['/acquisition/timeseries/' + recording + '/continuous/' + processor + '/timestamps'][1])
+                    self.timeStepMS=  (secondTimestamps-startTimestamps)*1e3
+                    self.durationMS=(self.extractedFile['/acquisition/timeseries/' + recording + '/continuous/' + processor + '/timestamps']).shape[0]*self.timeStepMS
+                    self.GetRelevantTimestamps()
+                    self.nChannels = self.extractedFile['/acquisition/timeseries/'+recording+'/continuous/'+processor+'/data'].shape[1]
+                    self.GetRelevantChannels()
+                    if ((self.startTimeIndex != None) and (self.endTimeIndex != None) and ( self.startChannel != None) and (self.endChannel != None) and ( self.timestamps[0] != None)):
+                        self.metaData = np.array((self.extractedFile['/acquisition/timeseries/'+recording+'/continuous/'+processor+'/data'][self.startTimeIndex:self.endTimeIndex,self.startChannel - 1:self.endChannel]))
+                        self.PlotData()
+                        #self.allData.append(currentData)
                     else:
                         print("Error Loading Data, Please Try Again")
         except Exception as e:
