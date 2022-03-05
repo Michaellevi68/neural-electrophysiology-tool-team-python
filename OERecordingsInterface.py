@@ -1,29 +1,36 @@
-
 import pyopenephys
 import numpy as np
-import CommonFunctions as CF
+import FormatInterface
 
-def HandelOEFile(inputFile):
-    extractedFile = pyopenephys.File(inputFile)
-    experiments=extractedFile.experiments
-    for experiment in experiments:
-        recordings =experiment.recordings
-        for recording in recordings:
-            #metaData = np.array((recording.analog_signals[0]).signal)
-            #timestamps = np.array((recording.analog_signals[0]).times)
-           # userPreferences = CF.GetUserPreferences(timestamps, len(metaData))
-            userPreferences = {}
-            durationMS = float((recording).duration)*1e3 # Scan all files and gets the total duration, therefore, needs to come first
-            samplingRate=float(recording.sample_rate)
-            timeStepMS = float(1/samplingRate)*1e3
-            userPreferences = CF.GetRelevantTimestamps(durationMS, timeStepMS, userPreferences)
-            nChannels =int (recording.nchan)
-            userPreferences = CF.GetRelevantChannels(nChannels, userPreferences)
-            if ((userPreferences['startTimeIndex'] != None) and (userPreferences['endTimeIndex'] != None) and (userPreferences['startChannel'] != None) and (userPreferences['endChannel'] != None) and (userPreferences['timestamps'][0] != None)):
-                metaData = np.array(((recording.analog_signals[0]).signal)[userPreferences['startChannel'] - 1:userPreferences['endChannel'], userPreferences['startTimeIndex']:userPreferences['endTimeIndex']])
-                CF.PlotData(metaData.transpose(), userPreferences)
-            else:
-                print("Error Loading Data, Please Try Again")
+class HandelOEFile:
+    def __init__(self,inputFile):
+       self.inputFile=inputFile
+       self.experiments=[]
+       self.recordings=[]
+       self.allData = []
 
-
-
+    def GetData(self):
+        try:
+            extractedFile = pyopenephys.File(self.inputFile)
+            self.experiments=extractedFile.experiments
+            for experiment in  self.experiments:
+                self.recordings =experiment.recordings
+                for recording in  self.recordings:
+                    currentData = FormatInterface.FormatInterface()
+                    currentData.durationMS = float((recording).duration)*1e3 # Scan all files and gets the total duration, therefore, needs to come first
+                    samplingRate=float(recording.sample_rate)
+                    currentData.timeStepMS = float(1/samplingRate)*1e3
+                    currentData.GetRelevantTimestamps()
+                    currentData.nChannels =int (recording.nchan)
+                    currentData.GetRelevantChannels()
+                    if ((currentData.startTimeIndex != None) and (currentData.endTimeIndex != None) and ( currentData.startChannel != None) and (currentData.endChannel != None) and ( currentData.timestamps[0] != None)):
+                        currentData.metaData = np.array(((recording.analog_signals[0]).signal)[ currentData.startChannel-1: currentData.endChannel,  currentData.startTimeIndex: currentData.endTimeIndex])
+                        currentData.metaData = currentData.metaData.transpose()
+                        currentData.PlotData()
+                        self.allData.append(currentData)
+                    else:
+                        print("Error Loading Data, Please Try Again")
+        except Exception as e:
+            print("An exception occurred. Please Try Again")
+            print(e)
+            return
