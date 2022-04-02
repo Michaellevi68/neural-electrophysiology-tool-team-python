@@ -3,8 +3,9 @@ import numpy as np
 import FormatInterface
 
 class HandelNWBFile(FormatInterface.FormatInterface):
-    def __init__(self,inputFile):
+    def __init__(self,inputFile,isGui):
         super().__init__()
+        self.isGui= isGui
         self.inputFile = inputFile
         self.listOfRecordings = []
         self.listOfProcessors = []
@@ -21,16 +22,21 @@ class HandelNWBFile(FormatInterface.FormatInterface):
                     secondTimestamps = np.array(self.extractedFile['/acquisition/timeseries/' + recording + '/continuous/' + processor + '/timestamps'][1])
                     self.timeStepMS=  (secondTimestamps-startTimestamps)*1e3
                     self.durationMS=(self.extractedFile['/acquisition/timeseries/' + recording + '/continuous/' + processor + '/timestamps']).shape[0]*self.timeStepMS
-                    self.GetRelevantTimestamps()
                     self.nChannels = self.extractedFile['/acquisition/timeseries/'+recording+'/continuous/'+processor+'/data'].shape[1]
-                    self.GetRelevantChannels()
-                    if ((self.startTimeIndex != None) and (self.endTimeIndex != None) and ( self.startChannel != None) and (self.endChannel != None) and ( self.timestamps[0] != None)):
-                        self.metaData = np.array((self.extractedFile['/acquisition/timeseries/'+recording+'/continuous/'+processor+'/data'][self.startTimeIndex:self.endTimeIndex,self.startChannel - 1:self.endChannel]))
-                        self.PlotData()
-                        #self.allData.append(currentData)
-                    else:
-                        print("Error Loading Data, Please Try Again")
+                    if (self.isGui==False):
+                        self.GetRelevantTimestamps()
+                        self.GetRelevantChannels()
+                        if ((self.startTimeIndex != None) and (self.endTimeIndex != None) and ( self.startChannel != None) and (self.endChannel != None) and ( self.timestamps[0] != None)):
+                            self.metaData = np.array((self.extractedFile['/acquisition/timeseries/'+recording+'/continuous/'+processor+'/data'][self.startTimeIndex:self.endTimeIndex,self.startChannel - 1:self.endChannel]))
+                            self.PlotData(self.isGui)
+                        else:
+                            print("Error Loading Data, Please Try Again")
         except Exception as e:
             print("An exception occurred. Please Try Again")
             print(e)
             return
+    def GetAndPlotMetaData(self):
+            self.metaData = np.array((self.extractedFile[
+                                          '/acquisition/timeseries/' + self.listOfRecordings[0] + '/continuous/' + self.listOfProcessors[0] + '/data'][
+                                      self.startTimeIndex:self.endTimeIndex, 0:self.nChannels]))
+            return self.PlotData(True)

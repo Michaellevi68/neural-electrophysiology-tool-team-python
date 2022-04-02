@@ -10,22 +10,21 @@ def GetFilePath():
     inputFile = inputFile.replace('"', '').replace("\\", "//")
     return inputFile
 
-def FileHandler():
+def FileHandler(isGui, inputFile):
     try:
-        inputFile= GetFilePath()
         fileType = os.path.splitext(inputFile)[1].lower()
         if fileType == '.nwb':
-            NWBFile= NWBInterface.HandelNWBFile(inputFile)
+            NWBFile=NWBInterface.HandelNWBFile(inputFile,isGui)
             NWBFile.GetData()
-            return
+            return NWBFile
         elif fileType == '.h5':
-            MCH5File= MCH5Interface.HandelMCH5File(inputFile)
+            MCH5File=MCH5Interface.HandelMCH5File(inputFile,isGui)
             MCH5File.GetData()
-            return
+            return MCH5File
         else:
-            OEFile=OERecordingsInterface.HandelOEFile(inputFile)
+            OEFile=OERecordingsInterface.HandelOEFile(inputFile,isGui)
             OEFile.GetData()
-            return
+            return OEFile
     except Exception as e:
         print("An exception occurred. Please Try Again")
         print(e)

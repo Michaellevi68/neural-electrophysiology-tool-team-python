@@ -4,7 +4,9 @@ userSelection=1
 
 while (userSelection!=0):
     try:
-        FileHandler.FileHandler()
+        isGui=False
+        inputFile = FileHandler.GetFilePath()
+        FileHandler.FileHandler(isGui,inputFile)
         print("\n\nTo Exit Please Press 0 or Press 1 To Continue")
         userSelection=int(input())
     except Exception as e:
