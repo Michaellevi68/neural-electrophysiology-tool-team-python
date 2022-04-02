@@ -4,3 +4,9 @@ Numpy
 OS
 matplotlib.pyplot
 pyopenephys
+
+GUI additional Packages:  
+sys
+matplotlib
+PyQt5
+easygui
